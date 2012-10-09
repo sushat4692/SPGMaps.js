@@ -67,44 +67,52 @@ SPGMaps.startAddress = function( address, option ) {
 	if(! SPGMaps.flag ) return false;
 	else SPGMaps.flag = false;
 
+	var iopt = {
+		"zoom" : 19,
+		"type" : google.maps.MapTypeId.ROADMAP,
+		"marker": true
+	};
+	if(option) SPGMaps.extend( iopt, option );
+
 	SPGMaps.viewWindow();
 	if( SPGMaps.address != address ) {
-		var iopt = {
-			"zoom" : 19,
-			"type" : google.maps.MapTypeId.ROADMAP,
-			"marker": true
-		};
-		if(option) SPGMaps.extend( iopt, option );
 		
 		SPGMaps.address = address;
-		SPGMaps.map = null;
 		var geocoder = new google.maps.Geocoder();
 		geocoder.geocode( { 'address': address }, function(results, status) {
 			if (status == google.maps.GeocoderStatus.OK) {
-				var myOptions = {
-					zoom: iopt.zoom,
-					center: results[0].geometry.location,
-					mapTypeId: iopt.type,
-					navigationControl: true,
-					navigationControlOptions: {
-						style: google.maps.NavigationControlStyle.SMALL,
-						position: google.maps.ControlPosition.LEFT_TOP
-					}
-				};
-				SPGMaps.map = new google.maps.Map(SPGMaps.win.get(0), myOptions);
-				
-				if( iopt.marker ) {
-					var marker = new google.maps.Marker({
-						map: SPGMaps.map, 
-						position: results[0].geometry.location
-					});
-				}
-				
-				SPGMaps.contorollerInit();
+				SPGMaps.result = results[0];
+				makeAddresMaps( SPGMaps.result );
 			} else {
 				// alert("Geocode was not successful for the following reason: " + status);
 			}
 		});
+	} else {
+		makeAddresMaps( SPGMaps.result );
+	}
+
+	function makeAddresMaps( result ) {
+		SPGMaps.map = null;
+		var myOptions = {
+			zoom: iopt.zoom,
+			center: result.geometry.location,
+			mapTypeId: iopt.type,
+			navigationControl: true,
+			navigationControlOptions: {
+				style: google.maps.NavigationControlStyle.SMALL,
+				position: google.maps.ControlPosition.LEFT_TOP
+			}
+		};
+		SPGMaps.map = new google.maps.Map(SPGMaps.win, myOptions);
+		
+		if( iopt.marker ) {
+			var marker = new google.maps.Marker({
+				map: SPGMaps.map, 
+				position: result.geometry.location
+			});
+		}
+		
+		SPGMaps.contorollerInit();
 	}
 }
 
